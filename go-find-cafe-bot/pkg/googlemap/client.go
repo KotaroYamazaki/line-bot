@@ -51,8 +51,12 @@ func (c *Client) TextSearch(ctx context.Context, req *TextSearchRequest) ([]Text
 	}
 	searchResp := make([]TextSearchResponse, 0, len(placeResp.Results))
 	for _, v := range placeResp.Results {
+		var ref string
+		if len(v.Photos) > 0 {
+			ref = v.Photos[0].PhotoReference
+		}
 		searchResp = append(searchResp, TextSearchResponse{
-			PhotoURL: fmt.Sprintf("https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=%s&key=%s", v.Photos[0].PhotoReference, c.key),
+			PhotoURL: fmt.Sprintf("https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=%s&key=%s", ref, c.key),
 			Name:     v.Name,
 			Addr:     v.FormattedAddress,
 			Rating:   v.Rating,
