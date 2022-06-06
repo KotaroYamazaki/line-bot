@@ -36,6 +36,7 @@ type TextSearchResponse struct {
 	Name     string
 	Addr     string
 	URL      string
+	Rating   float32
 }
 
 func (c *Client) TextSearch(ctx context.Context, req *TextSearchRequest) ([]TextSearchResponse, error) {
@@ -54,7 +55,8 @@ func (c *Client) TextSearch(ctx context.Context, req *TextSearchRequest) ([]Text
 			PhotoURL: fmt.Sprintf("https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=%s&key=%s", v.Photos[0].PhotoReference, c.key),
 			Name:     v.Name,
 			Addr:     v.FormattedAddress,
-			URL: fmt.Sprintf("https://www.google.com/maps/search/?api=1&query=%f,%f&quary_place_id=%s\n",
+			Rating:   v.Rating,
+			URL: fmt.Sprintf("https://www.google.com/maps/search/?api=1&query=%f,%f&quary_place_id=%s",
 				v.Geometry.Location.Lat,
 				v.Geometry.Location.Lng,
 				v.PlaceID),
