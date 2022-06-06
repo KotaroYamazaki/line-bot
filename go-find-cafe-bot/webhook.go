@@ -12,6 +12,8 @@ import (
 )
 
 const maxTextWC = 60
+const maxTitleWC = 40
+const dots = "..."
 
 func Webhook(w http.ResponseWriter, r *http.Request) {
 	bot, err := linebot.New(
@@ -44,9 +46,8 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 			case *linebot.TextMessage:
 				query := message.Text
 				res, err := mClient.TextSearch(ctx, &googlemap.TextSearchRequest{
-					Query:   fmt.Sprintf("静岡県浜松市 %s", query),
-					OpenNow: true,
-					Type:    googlemap.PlaceTypeCafe,
+					Query: fmt.Sprintf("静岡県浜松市 %s", query),
+					Type:  googlemap.PlaceTypeCafe,
 				})
 				if err != nil {
 					log.Fatal(err)
@@ -59,21 +60,24 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 					}
 					continue
 				}
-				max := 5
+				max := 10
 				ccs := make([]*linebot.CarouselColumn, 0, max)
 				for i, result := range res {
-					if i > max {
+					if i >= max {
 						break
 					}
-					rating := fmt.Sprintf("⭐ %.1f", result.Rating)
-					addr := result.Addr
-					if maxTextWC < utf8.RuneCountInString(addr) {
-						addr = string([]rune(addr)[:maxTextWC-len(rating)])
+					title := result.Name
+					if utf8.RuneCountInString(title) > maxTitleWC {
+						title = title[:(maxTitleWC-utf8.RuneCountInString(dots))] + dots
+					}
+					text := fmt.Sprintf("⭐ %.1f\n%s", result.Rating, result.Addr)
+					if utf8.RuneCountInString(text) > maxTextWC {
+						text = string([]rune(text)[:(maxTextWC-utf8.RuneCountInString(dots))]) + dots
 					}
 					cc := linebot.NewCarouselColumn(
 						result.PhotoURL,
-						result.Name,
-						fmt.Sprintf("%s\n%s", rating, addr),
+						title,
+						text,
 						linebot.NewURIAction("GoogleMapで開く", result.URL),
 					).WithImageOptions("#FFFFFF")
 					ccs = append(ccs, cc)
@@ -82,7 +86,6 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 					WithImageOptions("rectangle", "cover"))
 				_, err = bot.ReplyMessage(e.ReplyToken, reply).Do()
 				if err != nil {
-					_, _ = bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("%s: %s", query, err.Error()))).Do()
 					log.Println(err)
 				}
 			}
