@@ -25,7 +25,7 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 		return
 	}
-	mClient, err := googlemap.New(os.Getenv("GOOGLE_API_KEY"))
+	gmap, err := googlemap.New(os.Getenv("GOOGLE_API_KEY"))
 	if err != nil {
 		http.Error(w, "Error init google place API", http.StatusBadRequest)
 		log.Fatal(err)
@@ -45,7 +45,7 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 			switch message := e.Message.(type) {
 			case *linebot.TextMessage:
 				query := message.Text
-				res, err := mClient.TextSearch(ctx, &googlemap.TextSearchRequest{
+				res, err := gmap.TextSearch(ctx, &googlemap.TextSearchRequest{
 					Query: fmt.Sprintf("静岡県浜松市 %s", query),
 					Type:  googlemap.PlaceTypeCafe,
 				})
