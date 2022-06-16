@@ -1,0 +1,6 @@
+.env.example
+.env
+.gcloudignore
+.git
+.gitignore
+README.md
