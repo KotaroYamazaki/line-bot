@@ -13,6 +13,7 @@ import (
 	"github.com/KotaroYamazaki/line-bot/go-mahjong-score-bot/entites"
 	"github.com/KotaroYamazaki/line-bot/go-mahjong-score-bot/pkg/firestore"
 	"github.com/line/line-bot-sdk-go/linebot"
+	"google.golang.org/api/iterator"
 )
 
 func Webhook(w http.ResponseWriter, r *http.Request) {
@@ -71,12 +72,12 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 						CreatedDate: time.Now(),
 					}
 
-					if err := firestore.Set(ctx, entites.CollectionScores, path, fsScore); err != nil {
+					if err := firestore.AddSubCollection(ctx, entites.CollectionRescource, path, entites.CollectionScores, fsScore); err != nil {
 						log.Print(err)
 						continue
 					}
 
-					_, err = bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("%d 記録しました", score))).Do()
+					_, err = bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("%d 記録しました:D", score))).Do()
 					if err != nil {
 						log.Print(err)
 					}
@@ -90,18 +91,27 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 						log.Print(err)
 					}
 					continue
-				case "total":
-					score, err := firestore.Get(ctx, entites.CollectionScores, path, &entites.Score{})
-					if err != nil {
-						log.Print(err)
-						continue
+				case "total", "Total":
+					itr := firestore.WhereDocumentsItr(ctx, entites.CollectionRescource, entites.CollectionScores, path, entites.ScoreFields.UserUID, "==", e.Source.UserID)
+					sum := 0
+					cnt := 0
+					for {
+						score, err := itr.Next()
+						if err == iterator.Done {
+							break
+						}
+						s := &entites.Score{}
+						err = score.DataTo(s)
+						if err != nil {
+							log.Print(err)
+							continue
+						}
+						sum += s.Score
+						cnt++
 					}
-					s, ok := score.(*entites.Score)
-					if !ok {
-						log.Print("Error type assertion")
-						continue
-					}
-					_, err = bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("%s-(%d)-%s", s.UserUID, s.Score, s.CreatedDate.Format("2005/01/02")))).Do()
+					avg := float64(sum) / float64(cnt)
+
+					_, err = bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("=======\n総回数:%d回\n累計：%d\n平均:%.2f\n========", cnt, sum, avg))).Do()
 					if err != nil {
 						log.Print(err)
 					}
