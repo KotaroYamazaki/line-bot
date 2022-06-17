@@ -77,7 +77,7 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 						continue
 					}
 
-					_, err = bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("%d 記録しました:D", score))).Do()
+					_, err = bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("%s%d 記録しました:D", getSign(score), score))).Do()
 					if err != nil {
 						log.Print(err)
 					}
@@ -95,6 +95,7 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 					itr := firestore.WhereDocumentsItr(ctx, entites.CollectionRescource, entites.CollectionScores, path, entites.ScoreFields.UserUID, "==", e.Source.UserID)
 					sum := 0
 					cnt := 0
+					avg := float64(0)
 					for {
 						score, err := itr.Next()
 						if err == iterator.Done {
@@ -109,9 +110,11 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 						sum += s.Score
 						cnt++
 					}
-					avg := float64(sum) / float64(cnt)
+					if cnt != 0 {
+						avg = float64(sum) / float64(cnt)
+					}
 
-					_, err = bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("=======\n総回数:%d回\n累計：%d\n平均:%.2f\n========", cnt, sum, avg))).Do()
+					_, err = bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("=============\n▼総局数\n%d回\n▼累計スコア\n%s%d\n▼平均スコア\n%s%.2f\n==============", cnt, getSign(sum), sum, getSignF(avg), avg))).Do()
 					if err != nil {
 						log.Print(err)
 					}
@@ -121,4 +124,18 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	fmt.Fprint(w, "ok")
+}
+
+func getSign(score int) string {
+	if score > 0 {
+		return "+"
+	}
+	return ""
+}
+
+func getSignF(score float64) string {
+	if score > 0 {
+		return "+"
+	}
+	return ""
 }
