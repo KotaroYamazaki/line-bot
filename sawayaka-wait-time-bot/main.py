@@ -71,7 +71,7 @@ def get_wait_time(keyword):
             wait_time_min = wait_time_elm.find_element(
                 By.CLASS_NAME, "time").find_element(
                 By.CLASS_NAME, "num").text
-            waitSet = wait_time_elm.find_element(
+            wait_set = wait_time_elm.find_element(
                 By.CLASS_NAME, "set").find_element(
                 By.CLASS_NAME, "num").text
 
@@ -79,7 +79,7 @@ def get_wait_time(keyword):
                 msg.append(f"{shop_name}店は現在営業していない可能性があります")
             else:
                 msg.append(
-                    f"{shop_name}店のただいまの待ち時間: 約{wait_time_min}分 {waitSet}組待ち")
+                    f"{shop_name}店のただいまの待ち時間: 約{wait_time_min}分 {wait_set}組待ち")
 
     if is_find == False:
         msg.append(f"検索キーワード:'{keyword}'の店舗は見つかりませんでした")
