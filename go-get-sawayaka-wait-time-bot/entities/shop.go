@@ -27,7 +27,7 @@ var ShopFiels = struct {
 	WaitSet:   "wait_set",
 }
 
-func (s *Shop) ConvertText() string {
+func (s *Shop) ConvertToMessage() string {
 	if s.WaitTime == "-" {
 		return fmt.Sprintf("%s店: 営業時間外", s.Name)
 	}
