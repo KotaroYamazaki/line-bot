@@ -1,29 +1,35 @@
 package entites
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type Shop struct {
-	name     string   `firestore:"name"`
-	keywords []string `firestore:"-"`
-	waitTime string   `firestore:"wait_time"`
-	waitSet  string   `firestore:"wait_set"`
+	Name      string    `firestore:"name"`
+	Keywords  []string  `firestore:"-"`
+	Timestamp time.Time `firestore:"timestamp"`
+	WaitTime  string    `firestore:"wait_time"`
+	WaitSet   string    `firestore:"wait_set"`
 }
 
 var ShopFiels = struct {
-	Name     string
-	Keywords string
-	WaitTime string
-	WaitSet  string
+	Name      string
+	Keywords  string
+	Timestamp string
+	WaitTime  string
+	WaitSet   string
 }{
-	Name:     "name",
-	Keywords: "keywords",
-	WaitTime: "wait_time",
-	WaitSet:  "wait_set",
+	Name:      "name",
+	Keywords:  "keywords",
+	Timestamp: "timestamp",
+	WaitTime:  "wait_time",
+	WaitSet:   "wait_set",
 }
 
 func (s *Shop) ConvertText() string {
-	if s.waitTime == "-" {
-		return fmt.Sprintf("%s店: 営業時間外", s.name)
+	if s.WaitTime == "-" {
+		return fmt.Sprintf("%s店: 営業時間外", s.Name)
 	}
-	return fmt.Sprintf("%s店: %s分 %s組", s.name, s.waitTime, s.waitSet)
+	return fmt.Sprintf("%s店: %s分 %s組", s.Name, s.WaitTime, s.WaitSet)
 }

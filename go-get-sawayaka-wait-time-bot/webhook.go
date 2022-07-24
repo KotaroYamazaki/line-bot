@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/KotaroYamazaki/line-bot/go-get-sawayaka-wait-time-bot/entites"
 	"github.com/KotaroYamazaki/line-bot/go-get-sawayaka-wait-time-bot/pkg/firestore"
@@ -57,6 +58,10 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 					if err := shop.DataTo(s); err != nil {
 						log.Print(err)
 						continue
+					}
+					if len(waitTimes) == 0 {
+						jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+						waitTimes = append(waitTimes, fmt.Sprintf("%s 時点", s.Timestamp.In(jst).Format("2006/01/02 15:04")))
 					}
 					waitTimes = append(waitTimes, s.ConvertText())
 				}
