@@ -3,9 +3,10 @@ package entites
 import "fmt"
 
 type Shop struct {
-	Name     string `firestore:"name"`
-	WaitTime string `firestore:"wait_time"`
-	WaitSet  string `firestore:"wait_set"`
+	name     string   `firestore:"name"`
+	keywords []string `firestore:"-"`
+	waitTime string   `firestore:"wait_time"`
+	waitSet  string   `firestore:"wait_set"`
 }
 
 var ShopFiels = struct {
@@ -21,5 +22,8 @@ var ShopFiels = struct {
 }
 
 func (s *Shop) ConvertText() string {
-	return fmt.Sprintf("%s店: %s分 %s組", s.Name, s.WaitTime, s.WaitSet)
+	if s.waitTime == "-" {
+		return fmt.Sprintf("%s店: 営業時間外", s.name)
+	}
+	return fmt.Sprintf("%s店: %s分 %s組", s.name, s.waitTime, s.waitSet)
 }

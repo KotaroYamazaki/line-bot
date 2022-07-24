@@ -43,11 +43,10 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 		case linebot.EventTypeMessage:
 			switch message := e.Message.(type) {
 			case *linebot.TextMessage:
-				text := strings.TrimSpace(message.Text)
-				itr := firestore.WhereDocumentsItr(ctx, "sawayaka_shops", entites.ShopFiels.Keywords, "in", text)
+				query := strings.TrimSpace(message.Text)
+				itr := firestore.WhereDocumentsItr(ctx, "sawayaka_shops", entites.ShopFiels.Keywords, "array-contains", query)
 				var waitTimes []string
 
-				itr := firestore.WhereDocumentsItr(ctx, "sawayaka_shops", entites.ShopFiels.Keywords, "array-contains", query)
 				for {
 					shop, err := itr.Next()
 					if err == iterator.Done || shop == nil {
