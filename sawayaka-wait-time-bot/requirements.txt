@@ -1,0 +1,2 @@
+line-bot-sdk==2.3.0
+selenium==3.14.1
