@@ -58,9 +58,8 @@ def get_wait_time(keyword):
         shops = s.find_element(By.CLASS_NAME, "areaBox").find_elements(
             By.CLASS_NAME, "shop_info")
         for s in shops:
-            shopNameElm = s.find_element(By.CLASS_NAME, "shop_box").find_element(
-                By.CLASS_NAME, "shop_name").find_element(By.CLASS_NAME, "name")
-            shop_name = shopNameElm.text[:-1]  # exclude "店"
+            shop_name = s.find_element(By.CLASS_NAME, "shop_box").find_element(
+                By.CLASS_NAME, "shop_name").find_element(By.CLASS_NAME, "name").text[:-1]  # exclude "店"
 
             if not (keyword in shop_name):
                 continue
