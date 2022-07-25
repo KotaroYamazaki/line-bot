@@ -1,0 +1,11 @@
+.gcloudignore
+
+.git
+.gitignore
+.env
+.env.example
+
+Makefile
+README.md
+
+chromedriver
