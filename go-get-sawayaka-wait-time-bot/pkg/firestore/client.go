@@ -31,37 +31,8 @@ func New(ctx context.Context) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) Get(ctx context.Context, collection Collection, docID string, t interface{}) (interface{}, error) {
-	ds, err := c.service.Collection(string(collection)).Doc(docID).Get(ctx)
-	if err != nil {
-		return nil, err
-	}
-	err = ds.DataTo(t)
-	if err != nil {
-		return nil, err
-	}
-	return t, nil
-}
-
-func (c *Client) AddSubCollection(ctx context.Context, collection Collection, docID string, subCollection Collection, data interface{}) error {
-	_, _, err := c.service.Collection(string(collection)).Doc(docID).Collection(string(subCollection)).Add(ctx, data)
-	return err
-}
-
-func (c *Client) SetSubCollection(ctx context.Context, collection Collection, docID string, subCollection Collection, subColDocID string, data interface{}) error {
-	_, err := c.service.Collection(string(collection)).Doc(docID).Collection(string(subCollection)).Doc(subColDocID).Set(ctx, data)
-	return err
-}
-func (c *Client) GetSubCollectionDoc(ctx context.Context, collection, docId, subColllectinon, subColDocID string, t interface{}) (interface{}, error) {
-	ds, err := c.service.Collection(collection).Doc(docId).Collection(subColllectinon).Doc(subColDocID).Get(ctx)
-	if err != nil {
-		return nil, err
-	}
-	err = ds.DataTo(t)
-	if err != nil {
-		return nil, err
-	}
-	return t, nil
+func (c *Client) GetCollectionDocs(ctx context.Context, collection Collection) *firestore.DocumentIterator {
+	return c.service.Collection(string(collection)).Documents(ctx)
 }
 
 func (c *Client) WhereDocumentsItr(ctx context.Context, collection, key, op string, value interface{}) *firestore.DocumentIterator {

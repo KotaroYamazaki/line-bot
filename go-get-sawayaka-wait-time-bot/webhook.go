@@ -9,7 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/KotaroYamazaki/line-bot/go-get-sawayaka-wait-time-bot/entites"
+	fs "cloud.google.com/go/firestore"
+	"github.com/KotaroYamazaki/line-bot/go-get-sawayaka-wait-time-bot/entities"
 	"github.com/KotaroYamazaki/line-bot/go-get-sawayaka-wait-time-bot/pkg/firestore"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"google.golang.org/api/iterator"
@@ -44,8 +45,17 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 		case linebot.EventTypeMessage:
 			switch message := e.Message.(type) {
 			case *linebot.TextMessage:
-				query := strings.TrimSpace(message.Text)
-				itr := firestore.WhereDocumentsItr(ctx, "sawayaka_shops", entites.ShopFiels.Keywords, "array-contains", query)
+				query, err := entities.NewQuery(message.Text)
+				if err != nil {
+					log.Print(err)
+					continue
+				}
+				var itr *fs.DocumentIterator
+				if query.IsALL() {
+					itr = firestore.GetCollectionDocs(ctx, "sawayaka_shops")
+				} else {
+					itr = firestore.WhereDocumentsItr(ctx, "sawayaka_shops", entities.ShopFiels.Keywords, "array-contains", query)
+				}
 				var waitTimes []string
 
 				for {
@@ -54,7 +64,7 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 						break
 					}
 
-					s := &entites.Shop{}
+					s := &entities.Shop{}
 					if err := shop.DataTo(s); err != nil {
 						log.Print(err)
 						continue
@@ -63,10 +73,10 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 						jst := time.FixedZone("Asia/Tokyo", 9*60*60)
 						waitTimes = append(waitTimes, fmt.Sprintf("%s 時点", s.Timestamp.In(jst).Format("2006/01/02 15:04")))
 					}
-					waitTimes = append(waitTimes, s.ConvertText())
+					waitTimes = append(waitTimes, s.ConvertToMessage())
 				}
 
-				_, err = bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage(entites.GenerateMessage(strings.Join(waitTimes, "\n")))).Do()
+				_, err = bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage(entities.GenerateMessage(strings.Join(waitTimes, "\n")))).Do()
 				if err != nil {
 					log.Print(err)
 				}
