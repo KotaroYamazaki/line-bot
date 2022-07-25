@@ -18,8 +18,8 @@ deploy:
 	gcloud functions deploy update_wait_time \
 	 --runtime python39 \
 	 --trigger-topic=${TOPIC_NAME} \
-	 --memory=1024MB \
-	 --timeout=120 
+	 --memory=512MB \
+	 --timeout=60 
 
 scheduler:
 	gcloud scheduler jobs create pubsub sawayaka-wait-time-scheduler \
